@@ -53,7 +53,7 @@ WHERE {
 }'
 
 
-# Assign outut of SPARQL query to 'qddata2'
+# Assign output of SPARQL query to 'qddata2'
 qddata2 <- SPARQL(endpoint, query2)
 
 # Assign results of SPARQL query to data frame 'geo_lkp'
