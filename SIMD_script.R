@@ -4,7 +4,7 @@ library(dplyr)
 library(leaflet)
 library(rgdal)
 
-# Assign SPARQL query to 'query' variable
+# SPARQL query to retrieve data zones and SIMD rank values
 query <- 'PREFIX qb: <http://purl.org/linked-data/cube#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX sdmx: <http://purl.org/linked-data/sdmx/2009/concept#>
@@ -16,16 +16,16 @@ PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 
 SELECT ?dataZone ?SIMDrank
 WHERE {
-?indicator qb:dataSet data:scottish-index-of-multiple-deprivation-2016;
-<http://statistics.gov.scot/def/dimension/simdDomain> <http://statistics.gov.scot/def/concept/simd-domain/simd>;
-mp:rank ?SIMDrank;
-sdmxd:refPeriod <http://reference.data.gov.uk/id/year/2016> ;
-sdmxd:refArea ?area.
-?area rdfs:label ?dataZone.
+    ?indicator qb:dataSet data:scottish-index-of-multiple-deprivation-2016;
+              <http://statistics.gov.scot/def/dimension/simdDomain> <http://statistics.gov.scot/def/concept/simd-domain/simd>;
+              mp:rank ?SIMDrank;
+              sdmxd:refPeriod <http://reference.data.gov.uk/id/year/2016> ;
+              sdmxd:refArea ?area.
+    ?area rdfs:label ?dataZone.
 }'
 
 
-# Assign SPARQL endpoint to 'endpoint' variable
+# SPARQL endpoint to retrive the data
 endpoint <- "http://statistics.gov.scot/sparql"
 
 # Assign output of SPARQL query to 'qddata'
@@ -34,7 +34,7 @@ qddata <- SPARQL(endpoint, query)
 # Assign results of SPARQL query to data frame 'SIMDrank'
 SIMDrank <- qddata$results
 
-# Assign another SPARQL query to 'query2' variable
+# SPARQL query to retrieve data zones, council areas and council area codes
 query2 <- 'PREFIX qb: <http://purl.org/linked-data/cube#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX sdmx: <http://purl.org/linked-data/sdmx/2009/concept#>
@@ -45,10 +45,11 @@ PREFIX stat: <http://statistics.data.gov.uk/def/statistical-entity#>
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 
 SELECT ?dataZone ?councilArea ?councilAreaCode 
-WHERE {?dz <http://statistics.gov.scot/def/hierarchy/best-fit#council-area> ?ca.
-?ca rdfs:label ?councilArea.
-?ca <http://publishmydata.com/def/ontology/foi/code> ?councilAreaCode. 
-?dz rdfs:label ?dataZone.
+WHERE {
+    ?dz <http://statistics.gov.scot/def/hierarchy/best-fit#council-area> ?ca.
+    ?ca rdfs:label ?councilArea.
+    ?ca <http://publishmydata.com/def/ontology/foi/code> ?councilAreaCode. 
+    ?dz rdfs:label ?dataZone.
 }'
 
 
@@ -74,7 +75,7 @@ download.file("https://opendata.arcgis.com/datasets/fab4feab211c4899b602ecfbfbc4
 unzip("LAD.zip")
 
 # Load shapefile into R as spatial polygons data frame
-boundary=readOGR(dsn=getwd(), layer="Local_Authority_Districts_December_2017_Ultra_Generalised_Clipped_Boundaries_in_United_Kingdom_WGS84")
+boundary <- readOGR(dsn=getwd(), layer="Local_Authority_Districts_December_2017_Ultra_Generalised_Clipped_Boundaries_in_United_Kingdom_WGS84")
 
 # Merge spatial polygons data frame with data frame containing mean SIMD rank
 merged <- merge(boundary, SIMD_ca_mean, by.x = "lad17nm", 
